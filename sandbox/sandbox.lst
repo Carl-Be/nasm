@@ -1,0 +1,15 @@
+     1                                  section .data
+     2                                  
+     3                                  section .text
+     4                                  
+     5                                  	global _start
+     6                                  
+     7                                  _start:
+     8 00000000 90                      	nop
+     9                                  ; Put your experiments between the two nops...
+    10                                  
+    11                                  
+    12                                  
+    13                                  
+    14                                  ; Put your experiments between the two nops...
+    15 00000001 90                      	nop
