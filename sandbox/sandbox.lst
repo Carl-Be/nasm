@@ -1,15 +1,18 @@
      1                                  section .data
      2                                  
-     3                                  section .text
-     4                                  
-     5                                  	global _start
-     6                                  
-     7                                  _start:
-     8 00000000 90                      	nop
-     9                                  ; Put your experiments between the two nops...
-    10                                  
-    11                                  
-    12                                  
-    13                                  
-    14                                  ; Put your experiments between the two nops...
-    15 00000001 90                      	nop
+     3                                  
+     4                                  section .text
+     5                                  
+     6                                  	global _start
+     7                                  
+     8                                  _start:
+     9 00000000 90                      	nop
+    10                                  ; Put your experiments between the two nops...
+    11                                  	
+    12 00000001 B8FFFFFF7F              	mov eax, 07FFFFFFFh
+    13 00000006 FFC0                    	inc eax
+    14                                  
+    15                                  ; Put your experiments between the two nops...
+    16 00000008 90                      	nop
+    17                                  
+    18                                  section .bss 

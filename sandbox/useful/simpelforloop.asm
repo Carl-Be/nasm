@@ -1,6 +1,5 @@
 section .data
 
-
 section .text
 
 	global _start
@@ -8,9 +7,10 @@ section .text
 _start:
 	nop
 ; Put your experiments between the two nops...
-	
-	mov eax, 07FFFFFFFh
-	inc eax
+
+	mov eax, 5
+DoMore: dec eax
+	jnz DoMore
 
 ; Put your experiments between the two nops...
 	nop
