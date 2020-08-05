@@ -22,23 +22,33 @@ SECTION .bss			; Section containing uninitialized data
 	
 SECTION .data			; Section containing initialised data
 
+	ErrorEmptyMsg: db "Error: Input File Is Empty!", 10 ; This string is an error msg indicating an empty input file
+	ErrorEmptyMsgLen equ $-ErrorEmptyMsg ; Stores Constant value ErrorEmptyMsg size
+
 SECTION .text			; Section containing code
 
 global 	_start			; Linker needs this to find the entry point!
 	
 _start:
 	nop			; This no-op keeps gdb happy...
+	mov edi, 0  		; This is a count 
+	
 
 ; Read a buffer full of text from stdin:
 read:
-	mov eax,3		; Specify sys_read call
-	mov ebx,0		; Specify File Descriptor 0: Standard Input
 	mov ecx,Buff		; Pass offset of the buffer to read to
 	mov edx,BUFFLEN		; Pass number of bytes to read at one pass
+
+	mov eax,3		; Specify sys_read call
+	mov ebx,0		; Specify File Descriptor 0: Standard Input
+	
 	int 80h			; Call sys_read to fill the buffer
+
 	mov esi,eax		; Copy sys_read return value for safekeeping
 	cmp eax,0		; If eax=0, sys_read reached EOF on stdin
 	je Done			; Jump If Equal (to 0, from compare)
+
+	add edi,1  		; add one to the count 
 
 ; Set up the registers for the process buffer step:
 	mov ecx,esi		; Place the number of bytes read into ecx
@@ -67,6 +77,25 @@ Write:
 
 ; All done! Let's end this party:
 Done:
+	mov eax,edi 		; Move the count into eax for comparison 
+	cmp eax,0  		; Compare the count to zero. If count is zero The file is empty
+	je ErrorEmpty  		; Jump to ErrorEmpty to Print error message
+
 	mov eax,1		; Code for Exit Syscall
 	mov ebx,0		; Return a code of zero	
 	int 80H			; Make kernel call
+
+
+; This Procedure prints out an error message for empty file error handling. 
+ErrorEmpty:
+	mov eax, 4 		; Syscall sys_write 
+	mov ebx, 2 		; Error File Descriptor
+	mov ecx, ErrorEmptyMsg  ; Error Message to be Displayed
+	mov edx, ErrorEmptyMsgLen ; Size of Error Message
+	
+	int 80h 		; Call sys_write to write error to terminal 
+
+	mov eax,1		; Code for Exit Syscall
+	mov ebx,0		; Return a code of zero	
+	int 80H			; Make kernel call
+

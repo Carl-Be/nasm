@@ -1,0 +1,5 @@
+uppercaser2.asm:39: error: instruction not supported in 64-bit mode
+uppercaser2.asm:40: error: instruction not supported in 64-bit mode
+uppercaser2.asm:42: error: instruction not supported in 64-bit mode
+uppercaser2.asm:43: error: instruction not supported in 64-bit mode
+make: *** [makefile:4: uppercaser2.o] Error 1
