@@ -1,0 +1,22 @@
+     1                                  ; Test asm File to play with
+     2                                  ; 
+     3                                  ; Author: Carl Bechie
+     4                                  ; Created: 8/03/2020
+     5                                  ; Updated: 8/03/2020
+     6                                  ;
+     7                                  ; Will be inputed into sandbox.asm for building 
+     8                                  
+     9                                  section .data ; where initialized data goes 
+    10                                  section .bss ; where unitialized data goes 
+    11                                  section .text ; program code goes beneath here 
+    12                                  
+    13                                  	Global _start 	   		; Kerenel needs this global label to know where to start program execution 
+    14                                  		
+    15                                  _start: 	   		; start program code execution
+    16                                  
+    17 00000000 90                      	nop  			; gdb needs this to be happy 
+    18                                  
+    19 00000001 B810000000              	mov eax, 00010000b
+    20 00000006 A904000000              	test eax, 4  		
+    21                                  
+    22 0000000B 90                      	nop 			; gdb needs this to be happy 

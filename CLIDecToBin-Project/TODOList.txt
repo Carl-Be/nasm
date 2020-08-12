@@ -1,0 +1,5 @@
+Make Dec to Binary convertor - DONE
+
+Make Reverse String program - Not Done
+
+Make User Input manipulator - Not Done 
