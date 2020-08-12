@@ -1,18 +1,17 @@
-; Executeable: fillter 
-; Description: This program will take input from a file and convert its contents to the 
-; 	       oppropiate numric value that that the user inputted 
-;  
+; Executeable: dectobin
+; Description: Dec to Binary convertor 
+; 	       
 ;  Created: 8/11/2020
 ;  Updated: 8/11/2020
-;  Author: Carl Bechie
+;  Author: Carl-Be
 ;  Version: 1
 ;
 ; build cmommands:
-; 	    ld -o fillter filefillter.o
+; 	    ld -o dectobin filefillter.o
 ; 	    nasm -f elf64 -g -F stabs filefillter.asm -l filefillter.lst
 ;  
 ;      run:
-;           echo n | ./filefillter 
+;           echo n | ./dectobin 
 ;
 
 ; named initialized data here 
@@ -66,10 +65,10 @@ fillterBelow:
 
 ; Subtracts from the buffer index 
 minus: 
-	sub byte [ecx + ebp], 30h ; make the byte into a numric value and not ascii 
+	sub byte [ecx + ebp], 30h ; make the byte into a numric value and not ascii (kinda)
 	
 	cmp byte [ecx + edi], 0ah ; cmp to the eol chr  
-	je addtoeax ; just add the next value into eax instead of times and add  
+	je addtoeax ; just add the next value into eax instead of times and add 
 
 ; Sums the decimal value in eax  
 sumDec:	
@@ -104,8 +103,8 @@ convert:
         div ebx
         ; after DIV executes  eax = quotient | edx = remainder 
             
-        add dl, 30h ; add 30h to dl to carry out all the one bits form the not operation to get the proper hex value 
-        mov [ecx + ebp], dl; copy the remainder(ethier charater 0x30(zero) or 0x31(one) ASCII) into the binary buffer address incrementally by 1 add      ress each time
+        add dl, 30h ; add 30 to get the proper hex value 
+        mov [ecx + ebp], dl; copy the remainder(ethier charater 0x30(zero) or 0x31(one) ASCII) into the binary buffer address incrementally by 1 address each time
       
         inc ebp ; increment the (offset) buffer pointer by 1 so no buffer index gets overwriten           
       
@@ -135,9 +134,9 @@ reverse:
 	mov al, byte [edx + ebp] ; starting at the least signicant byte place it into the correct order buffer 
 	mov [ecx + edi], al ; starting at the most signicant byte start placing the correct order into the buffer 
 
-	inc edi ; increment esi by 1 	
+	inc edi ; increment edi by 1 	
 
-	cmp ebp, 0 ; once zero jmp to writeBuffer
+	cmp ebp, 0 ; once zero falls writeBuffer
 	jnz reverse ; jmp if not zero back to reverse until zero 
 
 ; Displays the write buffer to the terminal 
@@ -146,9 +145,10 @@ writeBuffer:
 	mov byte [ecx + 350], 0ah; place the end of line charater bake into the buffer 
 
 	mov eax, 4 ; System call sys_write
-	mov ebx, 1 ; File dicriptor for standard output 
+	mov ebx, 1 ; File discriptor for standard output 
 	mov edx, ORDERBUFFLEN; place the buffers length into edx for output 
-
+	;ecx already contains the output buffer for the system call
+	
 	int 80h ; softerware interupt for the service dispatchor through the kernel service call gate 
 
 ; Exits the program normally 
@@ -156,5 +156,5 @@ exitProgram:
 	mov eax, 1 ; Place the sys_exit interput vector system call into eax 
 	mov ebx, 0 ; Place the normal status exit code into ebx
 	
-	int 80h ; Call the kernel service call gate softerware interupt into the service dispatchor intuput vetor address in the interupt vetor tabel  
+	int 80h ; Call the kernel service call gate softerware interupt into the service dispatchor intuput vetor address in the interupt vector tabel  
 
