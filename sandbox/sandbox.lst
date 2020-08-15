@@ -1,0 +1,70 @@
+     1                                  ; Named Initalized Data
+     2                                  section .data
+     3 00000000 343536370A              	buffer: db "4567",10 ; mimic user input buffer 
+     4                                  ; Uninitalized Data
+     5                                  section .bss
+     6                                  
+     7                                  ;Program code here 
+     8                                  section .text 
+     9                                  
+    10                                  	Global _start ; declearing _start as a global label 
+    11                                  
+    12                                  ; Kernel enters program here 
+    13                                  _start: 
+    14 00000000 90                      	nop ; keeps gdb happy 
+    15                                  
+    16                                  	;memic the modified buffers
+    17 00000001 BB01000000              	mov ebx, 1 ; pointer for edgeing
+    18 00000006 B800000000              	mov eax, 0 ; accumalater
+    19 0000000B BA00000000              	mov edx, 0 ; to hold hexidecmial assci values 
+    20 00000010 B9[00000000]            	mov ecx, buffer ; mov the buffer into ecx 
+    21 00000015 BD00000000              	mov ebp, 0 ; buffer pointer 	
+    22                                  ;--------------------------------------------------------------------------------------------------------------------------------
+    23                                  ;CharatersToInteger: Takes user input and changes the hexidecmial ascii charaters to a interger that is usable by the machine to 
+    24                                  ; 		     preform arthimatic operations on the user input 
+    25                                  ;           UPDATED: 8/14/2020
+    26                                  ; 		 IN: User Input Buffer 
+    27                                  ;           RETURNS: Numeric Values of ASCII chr number
+    28                                  ; 	  REGISTERS: EAX, EBP, Buffer, EDX, ECX, EBX 
+    29                                  ;             CALLS: Nothing 
+    30                                  ; 	DESCRIPTION: Most of the time useful programs have to take in user input and manipulate it somehow. This Procedure enables ; 		        the reuse of the conversion algorithm that makes this possible. The algorithm is as follows:
+    31                                  ; 		     Starting at the most significant byte work from left to right. (10*n1)+n2 (10)+n3 (10)+......+ LSB. 
+    32                                  ; 		     Before the algorithm starts you must first convert the hexidecmial numbers into thier numric ascii values.
+    33                                  ; 		     you do this by subtracting 30h from the ascii charaters. EDX/EBP/EAX must be set to zero ECX must have buffer ;    		address.
+    34                                  
+    35                                  ; The main procedure: Turns ASCII charaters to Intergers 
+    36                                  CharatersToInteger:
+    37 0000001A 678A1429                	mov dl, byte [ecx + ebp] ; Starting at the Most significant byte moving left. Place the values into dl.
+    38 0000001E 80EA30                  	sub dl, 30h ; turn the ascii hexidecmial value into a repersented decimal value (still in hex form tho).
+    39 00000021 01D0                    	add eax, edx  ; add edx into the accumalater 	
+    40 00000023 89C2                    	mov edx, eax ; mov eax current state into edx for later addition
+    41                                  
+    42 00000025 67803C190A              	cmp byte [ecx + ebx], 0x0a ; check to see if the next loction in buffer is an EOL chr if so jmp to .localexit
+    43 0000002A 7411                    	je .localExit ; jump short if equal [ZF = 1]
+    44                                  
+    45                                  ;Times the accumalater by ten 
+    46                                  .timesTen:
+    47                                  	; times eax by 10 
+    48 0000002C 678D04C0                	lea eax, [eax * 8 + eax] ; eax * 9 	
+    49 00000030 01D0                    	add eax, edx ; eax * 10	
+    50                                  
+    51 00000032 FFC3                    	inc ebx ; +1 to ebx
+    52 00000034 FFC5                    	inc ebp ; +1 to ebp 
+    53 00000036 BA00000000              	mov edx, 0 ; clear edx 
+    54 0000003B EBDD                    	jmp CharatersToInteger ; recursion 
+    55                                  
+    56                                  ; used to get out of loop when EOL chr is found 
+    57                                  .localExit:
+    58 0000003D C3                      	ret ; procedure is done exit to normal program execution
+    59                                  		
+    60 0000003E 90                      	nop ; keeps gdb happy 
+    61                                  
+    62                                  
+    63                                  
+    64                                  
+    65                                  
+    66                                  
+    67                                  
+    68                                  
+    69                                  
+    70                                  
