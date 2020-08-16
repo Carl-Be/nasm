@@ -1,59 +1,73 @@
+; Description: This is just an example program
+
+
+
 ; Named Initalized Data
 section .data
-	buffer: db "4567",10 ; mimic user input buffer 
+	
+	ClearTermES: db 27, "FF" ; this is the escape sequence for clearing the xterm terminal 
+	;the length of the ClearTermES address bytes. Calculated with "Assembly Time Calculation"
+	CLEARLEN: equ $-ClearTermES ; The escape sequence needs to be passed trough a Standard Output file stream with int 80h
+
 ; Uninitalized Data
 section .bss
+	
+	BufferLength equ 1024 ; the constant lenth of the buffer 1024 bytes 
+	InputBuffer: resb BufferLength ; this the buffer itself 
+
 
 ;Program code here 
 section .text 
 
 	Global _start ; declearing _start as a global label 
 
+; get the the registers ready for system_read kernel command 
+%macro Sysread 2 ; %1 buffer %2 buffer length 
+	
+	mov eax, 3 ; System call read 
+	mov ebx, 0 ; File Discriptor Standard Input 
+	mov ecx, %1 ; copy the buffer address into ecx 
+	mov edx, %2 ; copy bufferlength into edx 
+
+%endmacro  
+
+; Clears the terminal from user input using escape sequences  
+%macro ClearTerm 2 ; %1 = the escape sequence  2% = the escape sequence length 
+	
+	mov eax, 4 ; System call write
+	mov ebx, 1; Standard Output File Discriptor 
+	mov ecx, %1 ; copy the escape sequence address into ecx
+	mov edx, %2 ; copy the escape sequence length into edx 
+	
+%endmacro
+
+; Gets registers ready to write to the screen
+
+%macro Syswrite 2 ; %1 buffer %2 bufferlength
+
+	mov eax, 4 ; System call write 
+	mov ebx, 1 ; File Discriptor Standard Output 
+	mov ecx, %1 ; copy the buffer address into ecx 
+	mov edx, %2 ; copy bufferlength into edx 
+
+%endmacro
+	
 ; Kernel enters program here 
 _start: 
 	nop ; keeps gdb happy 
+	
+	Sysread InputBuffer, BufferLength ; place the Sysread macro with its arguments
+	
+	int 80h ; call the system interupt to pass through the Kernel Service Call Gate to head towards the Service Dispathor
 
-	;memic the modified buffers
-	mov ebx, 1 ; pointer for edgeing
-	mov eax, 0 ; accumalater
-	mov edx, 0 ; to hold hexidecmial assci values 
-	mov ecx, buffer ; mov the buffer into ecx 
-	mov ebp, 0 ; buffer pointer 	
-;--------------------------------------------------------------------------------------------------------------------------------
-;CharatersToInteger: Takes user input and changes the hexidecmial ascii charaters to a interger that is usable by the machine to 
-; 		     preform arthimatic operations on the user input 
-;           UPDATED: 8/14/2020
-; 		 IN: User Input Buffer 
-;           RETURNS: Numeric Values of ASCII chr number
-; 	  REGISTERS: EAX, EBP, Buffer, EDX, ECX, EBX 
-;             CALLS: Nothing 
-; 	DESCRIPTION: Most of the time useful programs have to take in user input and manipulate it somehow. This Procedure enables ; 		        the reuse of the conversion algorithm that makes this possible. The algorithm is as follows:
-; 		     Starting at the most significant byte work from left to right. (10*n1)+n2 (10)+n3 (10)+......+ LSB. 
-; 		     Before the algorithm starts you must first convert the hexidecmial numbers into thier numric ascii values.
-; 		     you do this by subtracting 30h from the ascii charaters. EDX/EBP/EAX must be set to zero ECX must have buffer ;    		address.
+	ClearTerm ClearTermES, CLEARLEN ; place the ClearTerm macro with its required arguments
 
-; The main procedure: Turns ASCII charaters to Intergers 
-CharatersToInteger:
-	mov dl, byte [ecx + ebp] ; Starting at the Most significant byte moving left. Place the values into dl.
-	sub dl, 30h ; turn the ascii hexidecmial value into a repersented decimal value (still in hex form tho).
-	add eax, edx  ; add edx into the accumalater 	
-	mov edx, eax ; mov eax current state into edx for later addition
+	int 80h ; call the system interupt to pass through the Kernel Service Call Gate to head towards the Service Dispathor
 
-	cmp byte [ecx + ebx], 0x0a ; check to see if the next loction in buffer is an EOL chr if so jmp to .localexit
-	je .localExit ; jump short if equal [ZF = 1]
+	Syswrite InputBuffer, BufferLength ; place the Syswrite macro with its arguments
 
-	lea eax, [eax * 8 + eax] ; eax * 9 	
-	add eax, edx ; eax * 10	
+	int 80h ; call the system interupt to pass through the Kernel Service Call Gate to head towards the Service Dispathor
 
-	inc ebx ; +1 to ebx
-	inc ebp ; +1 to ebp 
-	mov edx, 0 ; clear edx 
-	jmp CharatersToInteger ; recursion 
-
-; used to get out of loop when EOL chr is found 
-.localExit:
-	ret ; procedure is done exit to normal program execution
-		
 	nop ; keeps gdb happy 
 
 

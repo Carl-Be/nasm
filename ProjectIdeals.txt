@@ -1,0 +1,1 @@
+Divisior with shifting right and subtraction from user input 
