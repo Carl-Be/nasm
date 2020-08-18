@@ -1,0 +1,97 @@
+     1                                  ; Desctiption: This is a binary to decimal convertor using shifts and one add 
+     2                                  ;
+     3                                  ;     Created: 8/18/2020
+     4                                  ;     Updated: 8/18/2020 
+     5                                  ;      Authur: Carl-Be
+     6                                  ;     Version: 1 
+     7                                  ;     
+     8                                  ;      build:
+     9                                  ; 	nasm -f elf64 -g -F stabs -l BinToDec.lst BinToDec.asm
+    10                                  ; 	ld -o BinToDec BinToDec.o
+    11                                  ;
+    12                                  ;      run: 
+    13                                  ;        ./BinToDec.asm or echo banary | ./BinToDec.asm or ./BinToDec.asm
+    14                                  
+    15                                  ;Initalized named data here
+    16                                  section .data 
+    17 00000000 14000000                	binary dd 00010100b ; 20 in decimal 
+    18                                  
+    19                                  ;Uninitalized named data here
+    20                                  section .bss 
+    21                                  
+    22                                  ;Program code here 
+    23                                  section .text 
+    24                                  
+    25                                  	Global _start ; make the start label global	
+    26                                  
+    27                                  ; Program entry point 
+    28                                  _start: 
+    29 00000000 90                      	nop ; keeps gdb happy
+    30                                  	
+    31 00000001 31DB                    	xor ebx, ebx ; clear ebx 
+    32                                  
+    33 00000003 B901000000              	mov ecx, 1 ; start the index count at 1 
+    34 00000008 BBD7000000              	mov ebx, 11010111b; copy the binary into ebx
+    35 0000000D BE20000000              	mov esi, 32 ; max bits 
+    36 00000012 BF00000000              	mov edi, 0 ; this is the sum 
+    37                                  
+    38                                  ;Since we are going to be using shl to get our decimal number the binary 0 index can be shifted out into the carry flag 
+    39                                  ;for addition later on. 
+    40                                  getLowestBit: 
+    41                                  	
+    42 00000017 D1EB                    	shr ebx, 1 ; shift the 0 or 1 bit at index 0 into the carry flag 	
+    43                                  
+    44 00000019 7202                    	jc storeOne ; store the one bit for safe keeping if carry flag is set from the shift
+    45 0000001B EB0C                    	jmp getDecimal ; if no carry go to getDecimal
+    46                                  
+    47                                  ;stores the carry flag 1 bit in edx manually 
+    48                                  storeOne: 
+    49 0000001D BA01000000              	mov edx, 1 ; mov 1 into edx because the shift right carried a bit  
+    50                                  
+    51 00000022 31C0                    	xor eax, eax ; clear eax 
+    52 00000024 B801000000              	mov eax, 1
+    53                                  
+    54                                  ; this label gets the decimal value 
+    55                                  getDecimal:	
+    56                                  	
+    57 00000029 D1EB                    	shr ebx, 1 ; shift the binary out into the carry flag  
+    58 0000002B 720B                    	jc shiftAccLeft ; if the ebx shfit right caused the CF=1 shfit the accumaltor left by the indexcount ammount  
+    59                                  
+    60 0000002D FFC1                    	inc ecx 
+    61 0000002F FFCE                    	dec esi
+    62                                  
+    63 00000031 83FE00                  	cmp esi, 0 ; if zero exit loop is not recurssion 
+    64 00000034 7416                    	jz addOne; if the length counter is zero jump to addOne
+    65 00000036 EBF1                    	jmp getDecimal ; jump to getDecemial
+    66                                  
+    67                                  shiftAccLeft:
+    68                                  
+    69 00000038 D3E0                    	shl eax, cl
+    70                                  	
+    71 0000003A 01C7                     	add edi, eax ; add eax to the sum
+    72                                  	
+    73 0000003C B801000000              	mov eax, 1 ; reset eax to 1  
+    74                                  
+    75 00000041 FFC1                    	inc ecx 
+    76 00000043 FFCE                    	dec esi  
+    77                                  
+    78 00000045 83FE00                  	cmp esi, 0 ; if zero exit loop is not recurssion 
+    79 00000048 7402                    	jz addOne; if the length counter is zero jump to addOne
+    80 0000004A EBDD                    	jmp getDecimal ; jump to getDecemial
+    81                                  
+    82                                  
+    83                                  
+    84                                  ;This adds one to the accumaltor if edx = 1 
+    85                                  addOne:
+    86 0000004C 83FA01                  	cmp edx, 1 ; if edx is not 1 jump to exit else add one to the sum
+    87 0000004F 7503                    	jnz exit ; jump to exit 
+    88                                  
+    89 00000051 83C701                  	add edi , 1 ; add one to the sum
+    90                                  
+    91                                  ; exit program here 
+    92                                  exit: 
+    93 00000054 B801000000              	mov eax, 1 ; sys_exit System call
+    94 00000059 BB00000000              	mov ebx, 0 ; normal exit code 
+    95                                  
+    96 0000005E CD80                    	int 80h    ; system interupt to service dispatchor 
+    97                                  	
